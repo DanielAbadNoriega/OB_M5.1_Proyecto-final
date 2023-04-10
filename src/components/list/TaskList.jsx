@@ -1,50 +1,101 @@
 import React, { useState } from "react";
-import useList from "../../hooks/useList";
+
+/**
+ * Componente que gestiona la lista de tareas
+ *
+ * @returns {React.Component}
+ */
 
 const TaskList = () => {
-  const tasks = useList([]);
   const [newTask, setNewTask] = useState("");
+  const [tasklist, setTasklist] = useState([]);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    tasks.push(newTask);
+  /**
+   * Añade una nueva tarea a la lista
+   * v2: La nueva tarea se añade como un objeto { task: nombre de la tarea, completed: si está completada o no}
+   */
+
+  const addNewTask = () => {
+    setTasklist([...tasklist, { task: newTask, completed: false }]);
     setNewTask("");
+    return true;
   };
 
-  const handleInputChange = (event) => {
-    setNewTask(event.target.value);
+  /**
+   * Función para chequear si la lista de tareas está vacía
+   * @returns true si tasklist.length === 0
+   */
+  const isTasksEmpty = () => tasklist.length === 0;
+
+  /**
+   * Editar el nombre de la nueva tarea
+   * @param {*} e - Evento de onChange proveniente de React
+   */
+
+  const editNewItem = (e) => setNewTask(e.target.value);
+
+  /**
+   * Función para eliminar una tarea en concreto
+   * @param {*} index - Índice de la tarea a eliminar
+   */
+
+  const removeItem = (index) => {
+    const newtasklist = tasklist.filter((t, i) => i !== index);
+    setTasklist(newtasklist);
   };
 
+  /**
+   * Cambia el item por completado <-> pendiente
+   * @param {*} index 
+   */
+
+  const toggleCompleteItem = (index) => {
+    let newTaskList = tasklist;
+    newTaskList[index].completed = !newTaskList[index].completed;
+    setTasklist([...newTaskList]);
+  };
+
+  /**
+   * Añade una nueva tarea cuando se presiona la tecla Enter
+   * @param {*} e - Evento onKeyDown que proviene por defecto de React
+   */
+
+  const insertNewItemOnEnterKey = (e) => e.key === "Enter" && addNewTask();
   return (
-    <div>
+    <>
       <h1>Task List</h1>
-      <form onSubmit={handleSubmit}>
+      <div>
         <input
+          className="input"
           value={newTask}
-          onChange={handleInputChange}
+          onKeyDown={insertNewItemOnEnterKey}
+          onChange={editNewItem}
           placeholder="New Task"
           type="text"
-          className="form-control"
         />
-        <button type="submit">Create Task</button>
-      </form>
-      {tasks.isEmpty() ? (
-        <p>Task List is empty.</p>
+        <button className="btn" onClick={addNewTask}>
+          Create Task
+        </button>
+      </div>
+      {isTasksEmpty() ? (
+        <p>Task List is Empty</p>
       ) : (
         <ul>
-          {tasks.value.map((task, index) => (
+          {tasklist.map((item, index) => (
             <li key={index}>
               <input
                 type="checkbox"
-                onClick={() => tasks.remove(index)}
-                defaultChecked={false}
+                // onClick={() => removeItem(index)}
+                onClick={() => toggleCompleteItem(index)}
+                checked={item.completed}
+                onChange={() => {}}
               />
-              {task}
+              {item.task}
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </>
   );
 };
 
